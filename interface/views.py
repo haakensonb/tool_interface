@@ -7,7 +7,8 @@ def index(request):
     roles = Role.objects.all()
     return render(request, 'interface/index.html', context={'possible_privs': possible_privs, 'roles': roles})
 
-def add_possible_priv(request, priv):
+def add_possible_priv(request):
+    priv = request.POST.get('add_priv')
     obj, created = PossiblePrivilege.objects.get_or_create(
         priv_name=priv
     )
@@ -17,7 +18,8 @@ def add_possible_priv(request, priv):
         print(f"possible privilege {obj.priv_name} already exists")
     return redirect('index')
 
-def delete_possible_priv(request, priv):
+def delete_possible_priv(request):
+    priv = request.POST.get('delete_priv')
     try:
         p = PossiblePrivilege.objects.get(priv_name=priv)
         p.delete()
@@ -26,7 +28,8 @@ def delete_possible_priv(request, priv):
         print(f"possible privilege {priv} does not exist")
     return redirect('index')
 
-def add_role(request, role):
+def add_role(request):
+    role = request.POST.get('role')
     obj, created = Role.objects.get_or_create(
         role_name=role
     )
@@ -36,7 +39,8 @@ def add_role(request, role):
         print(f"role {role} already exists")
     return redirect('index')
 
-def delete_role(request, role):
+def delete_role(request):
+    role = request.POST.get('role')
     try:
         r = Role.objects.get(role_name=role)
         r.delete()
@@ -45,7 +49,9 @@ def delete_role(request, role):
         print(f"role {role} doesn't exist")
     return redirect('index')
 
-def assign_priv_to_role(request, role, priv):
+def assign_priv_to_role(request):
+    role = request.POST.get('role')
+    priv = request.POST.get('priv')
     r, p = None, None
     try:
         r = Role.objects.get(role_name=role)
@@ -69,7 +75,9 @@ def assign_priv_to_role(request, role, priv):
 
     return redirect('index')
 
-def remove_priv_from_role(request, role, priv):
+def remove_priv_from_role(request):
+    role = request.POST.get('role')
+    priv = request.POST.get('priv')
     r, p = None, None
     try:
         r = Role.objects.get(role_name=role)
