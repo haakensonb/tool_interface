@@ -16,6 +16,9 @@ class PossiblePrivilege(models.Model):
 
 
 class Privilege(models.Model):
+    class Meta:
+        ordering = ['priv']
+
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     priv = models.ForeignKey(PossiblePrivilege, on_delete=models.CASCADE)
 
