@@ -9,6 +9,14 @@
 </head>
 <body>
     <h1>Interface</h1>
+    <br>
+    <br>
+    <h3>Possible Privileges</h3>
+    <ul>
+        {% for priv in possible_privs %}
+            <li>{{ priv }}</li>
+        {% endfor %}
+    </ul>
     
     <script type="text/javascript" src="{% static 'js/index.js' %}"></script>
 </body>
