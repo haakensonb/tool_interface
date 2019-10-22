@@ -8,7 +8,8 @@
 2. Start development server:
 
 
-    ```python manage.py migrate
+    ```
+    python manage.py migrate
     python manage.py runserver
     ```
 
