@@ -10,11 +10,26 @@
 <body>
     <h1>Interface</h1>
     <br>
-    <br>
     <h3>Possible Privileges</h3>
     <ul>
         {% for priv in possible_privs %}
             <li>{{ priv }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <h3>Roles</h3>
+    <ul>
+        {% for role in roles %}
+            <li>
+                <p>{{ role }}</p>
+                {% if role.privilege_set.all %}
+                    <ul>
+                        {% for privilege in role.privilege_set.all %}
+                        <li>{{ privilege.priv.priv_name }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </li>
         {% endfor %}
     </ul>
     
