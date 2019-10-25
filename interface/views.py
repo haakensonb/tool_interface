@@ -1,11 +1,34 @@
 from django.shortcuts import render, redirect
 from interface.models import Role, PossiblePrivilege, Privilege
+from django.http import JsonResponse
 
 # Create your views here.
 def index(request):
     possible_privs = PossiblePrivilege.objects.all()
     roles = Role.objects.all()
     return render(request, 'interface/index.html', context={'possible_privs': possible_privs, 'roles': roles})
+
+
+def roles_and_privs(request):
+    # janky
+    # data list building should be moved to method on Role
+    roles = Role.objects.all()
+    data_list = []
+    for role in roles:
+        data = {}
+        data['id'] = role.id
+        data['role_name'] = role.role_name
+        data['privs'] = []
+        for priv in role.privilege_set.all():
+            data['privs'].append(priv.priv.priv_name)
+        data_list.append(data)
+    return JsonResponse({'context': data_list})
+
+
+def all_possible_privs(request):
+    possible_privs = list(PossiblePrivilege.objects.all().values())
+    return JsonResponse({'context': possible_privs})
+
 
 def add_possible_priv(request):
     priv = request.POST.get('add_priv')
