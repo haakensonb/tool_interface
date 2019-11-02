@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from interface.models import Role, PossiblePrivilege, Privilege
 from django.http import JsonResponse
+import json
 
 # Create your views here.
 def index(request):
@@ -10,18 +11,8 @@ def index(request):
 
 
 def roles_and_privs(request):
-    # janky
-    # data list building should be moved to method on Role
-    roles = Role.objects.all()
-    data_list = []
-    for role in roles:
-        data = {}
-        data['id'] = role.id
-        data['role_name'] = role.role_name
-        data['privs'] = []
-        for priv in role.privilege_set.all():
-            data['privs'].append(priv.priv.priv_name)
-        data_list.append(data)
+    # get_all_roles_with_privs is a static method on Role model
+    data_list = Role.get_all_roles_with_privs()
     return JsonResponse({'context': data_list})
 
 
@@ -31,25 +22,36 @@ def all_possible_privs(request):
 
 
 def add_possible_priv(request):
-    priv = request.POST.get('add_priv')
-    obj, created = PossiblePrivilege.objects.get_or_create(
-        priv_name=priv
-    )
-    if created:
-        print(f"created possible privilege {priv}")
-    elif obj:
-        print(f"possible privilege {obj.priv_name} already exists")
-    return redirect('index')
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode("utf-8"))
+        priv = json_data['add_priv']
+        obj, created = PossiblePrivilege.objects.get_or_create(
+            priv_name=priv
+        )
+        outgoing_data = {}
+        if created:
+            outgoing_data['message'] = 'Created possible privilege'
+            # send back the priv that was added so the frontend knows what to add
+            outgoing_data['added_priv'] = priv
+        elif obj:
+            outgoing_data['message'] = f"possible privilege {obj.priv_name} already exists"
+        return JsonResponse({'context': outgoing_data})
+    return JsonResponse({'error': 'Request method was not POST'})
 
 def delete_possible_priv(request):
-    priv = request.POST.get('delete_priv')
-    try:
-        p = PossiblePrivilege.objects.get(priv_name=priv)
-        p.delete()
-        print(f"deleted possible privilege {p.priv_name}")
-    except PossiblePrivilege.DoesNotExist:
-        print(f"possible privilege {priv} does not exist")
-    return redirect('index')
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode('utf-8'))
+        delete_privs = json_data['delete_privs']
+        data = {'message': "Deleted privilege(s): ", 'error': "Error privileges do not exist: "}
+        for priv in delete_privs:
+            try:
+                p = PossiblePrivilege.objects.get(priv_name=priv)
+                p.delete()
+                data['message'] += priv
+            except PossiblePrivilege.DoesNotExist:
+                data['error'] += priv
+        return JsonResponse({'context': data})
+    return JsonResponse({'error': 'Request method was not POST'})
 
 def add_role(request):
     role = request.POST.get('role')

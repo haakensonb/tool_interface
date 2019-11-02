@@ -11,22 +11,25 @@
     <h1>Interface</h1>
     <br>
     <h3>Possible Privileges</h3>
-    <form action="{% url 'add_possible_priv' %}" method="POST">
+    <form id="add_priv" action="#" method="POST">
         {% csrf_token %}
         <input type="text" name="add_priv">
         <input type="submit" value="Add Privilege">
     </form>
     <br>
-    <form action="{% url 'delete_possible_priv' %}" method="POST">
+    <form id="delete_priv" action="#" method="POST">
         {% csrf_token %}
-        <input type="text" name="delete_priv">
-        <input type="submit" value="Delete Privilege">
+        <input type="submit" value="Delete Selected Privileges">
+        <br>
+        <label>
+            <input id="toggle_select_all" type="checkbox" value="Toggle Select All">
+            Toggle Select All
+        </label>
+        <div class="possible_privs_checkboxes">
+            <ul id="possible_privs">
+            </ul>
+        </div>
     </form>
-    <ul id="possible_privs">
-        <!-- {% for priv in possible_privs %}
-            <li>{{ priv }}</li>
-        {% endfor %} -->
-    </ul>
     <br>
     <h3>Roles</h3>
     <form action="{% url 'add_role' %}" method="POST">
