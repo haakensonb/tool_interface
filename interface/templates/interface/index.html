@@ -44,6 +44,7 @@
         <div class="modal-background"></div>
         <div class="modal-content">
             <form action="#" id="edit_role_privs">
+                <input id="apply_priv_edit" type="submit" value="Apply changes">
                 <div id="role_priv_checkboxes">
                     <ul id="role_privs"></ul>
                 </div>
@@ -51,6 +52,7 @@
         </div>
         <button class="modal-close is-large" aria-label="close"></button>
     </div>
+
     <form id="delete_role" action="#" method="POST">
         {% csrf_token %}
         <input type="submit" value="Delete Selected Roles">

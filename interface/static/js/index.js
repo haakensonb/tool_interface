@@ -46,11 +46,14 @@ function renderList(data, listSelector, callback){
     })
 };
 
-function renderPossiblePriv(listEl, priv){
+function renderPossiblePriv(listEl, priv, checked = false){
+    console.log(priv);
+    console.log(checked);
     const listItem = document.createElement('li');
     listEl.appendChild(listItem);
     const checkbox = document.createElement('input');
     checkbox.type = "checkbox";
+    checkbox.checked = checked;
     checkbox.name = priv.priv_name;
     listItem.appendChild(checkbox);
     listItem.appendChild(document.createTextNode(priv.priv_name));
@@ -64,6 +67,15 @@ function renderRoleAndPriv(listEl, role_and_priv){
     checkbox.name = role_and_priv.role_name;
     listItem.appendChild(checkbox);
     listItem.appendChild(document.createTextNode(role_and_priv.role_name));
+    // janky way to create linebreak, change later
+    listItem.appendChild(document.createElement('br'));
+    // add button for editing privs
+    const editBtn = document.createElement('button');
+    editBtn.value = role_and_priv.role_name;
+    editBtn.innerText = `Edit ${role_and_priv.role_name} Priviliges`;
+    editBtn.classList.add('edit_priv');
+    editBtn.addEventListener("click", openEditBtn);
+    listItem.appendChild(editBtn);
     // render privs for role
     const privList = document.createElement('ul');
     listItem.appendChild(privList);
@@ -75,6 +87,55 @@ function renderRoleAndPriv(listEl, role_and_priv){
 
 }
 
+// modal event listeners
+async function openEditBtn(e){
+    document.querySelector(".modal").classList.add('is-active');
+    const role_name = e.target.value; 
+    const res = await getData(`http://127.0.0.1:8000/interface/get_role_privs/${role_name}`);
+    let possible_privs = res.context.possible_privs;
+    let role = res.context.role;
+    const listEl = document.querySelector("#role_privs");
+    clearList(listEl);
+    possible_privs.forEach(priv => {
+        if(role.privs.includes(priv.priv_name)){
+            renderPossiblePriv(listEl, priv, true);
+        } else{
+            renderPossiblePriv(listEl, priv);
+        }
+    });
+    // put role in button name so that it can be accessed again in another function
+    document.querySelector("#apply_priv_edit").name = e.target.value;
+}
+const modalBtn = document.querySelector(".modal-close");
+const modalBackground = document.querySelector(".modal-background");
+const modalCloseHandler = (e) => {
+    document.querySelector(".modal").classList.remove('is-active');
+};
+modalBtn.addEventListener("click", modalCloseHandler);
+modalBackground.addEventListener("click", modalCloseHandler);
+
+async function editBtnHandler(e){
+    e.preventDefault();
+    let selectedPrivs = [];
+    let notSelectedPrivs = [];
+    const checkboxes = document.querySelector("#role_priv_checkboxes").querySelectorAll("input[type=checkbox]");
+    checkboxes.forEach(checkbox => {
+        if(checkbox.checked){
+            selectedPrivs.push(checkbox.name);
+        } else {
+            notSelectedPrivs.push(checkbox.name);
+        }
+    });
+    const role = e.target.name;
+    data = {role: role, selected_privs: selectedPrivs, not_selected_privs: notSelectedPrivs};    
+    // wait for data to be updated and then rerender the roles and privs
+    await postData('http://127.0.0.1:8000/interface/edit_role_priv_assignment', data);
+    getAndRenderRolesAndPrivs();
+    // also close the modal
+    document.querySelector('.modal').classList.remove('is-active');
+}
+const applyPrivEditBtn = document.querySelector("#apply_priv_edit");
+applyPrivEditBtn.addEventListener("click", editBtnHandler);
 
 const addPrivFormEl = document.querySelector("#add_priv");
 const addPrivHandler = async (e) => {
@@ -86,7 +147,9 @@ const addPrivHandler = async (e) => {
     console.log(res);
     if(res.context.hasOwnProperty('added_priv')){
         const listEl = document.querySelector('#possible_privs');
-        renderPossiblePriv(listEl, res.context.added_priv);
+        console.log(res.context.added_priv);
+        // render method expects object in this format
+        renderPossiblePriv(listEl, {priv_name: res.context.added_priv});
     }
 };
 addPrivFormEl.addEventListener("submit", addPrivHandler);
@@ -136,7 +199,8 @@ const deletePrivHandler = async (e) => {
     data = {delete_privs: privsToDel};
     await postData('http://127.0.0.1:8000/interface/possibleprivilege/delete', data);
     getAndRenderPrivs();
-
+    // also need to rerender roles
+    getAndRenderRolesAndPrivs();
 };
 deletePrivFormEl.addEventListener("submit", deletePrivHandler);
 

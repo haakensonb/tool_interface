@@ -11,5 +11,7 @@ urlpatterns = [
     path('assign', views.assign_priv_to_role, name="assign_priv_to_role"),
     path('remove', views.remove_priv_from_role, name="remove_priv_from_role"),
     path('roles_and_privs', views.roles_and_privs, name='roles_and_privs'),
-    path('all_possible_privs', views.all_possible_privs, name="all_possible_privs")
+    path('all_possible_privs', views.all_possible_privs, name="all_possible_privs"),
+    path('get_role_privs/<role>', views.get_role_privs, name="get_role_privs"),
+    path('edit_role_priv_assignment', views.edit_role_priv_assignment, name="edit_role_priv_assignment")
 ]

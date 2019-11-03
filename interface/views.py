@@ -84,6 +84,56 @@ def delete_role(request):
                 data['error'] += role
     return JsonResponse({'error': 'Request method was not POST'})
 
+
+def get_role_privs(request, role):
+    r = Role.get_role_with_privs(role)
+    p = list(PossiblePrivilege.objects.all().values())
+    data = {
+        'role': r,
+        'possible_privs': p
+    }
+    return JsonResponse({'context': data})
+
+
+def edit_role_priv_assignment(request):
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode('utf-8'))
+        role_name = json_data['role']
+        selected_privs = json_data['selected_privs']
+        not_selected_privs = json_data['not_selected_privs']
+        r = Role.objects.get(role_name=role_name)
+        curr_privs = [priv.priv.priv_name for priv in r.privilege_set.all()]
+        data = {'message': "", 'error': ""}
+
+        for selected_priv in selected_privs:
+            if selected_priv not in curr_privs:
+                # add privilige
+                p = PossiblePrivilege.objects.get(priv_name=selected_priv)
+                # need to add check to make sure role and privilige are found
+                obj, created = Privilege.objects.get_or_create(
+                    role=r,
+                    priv=p
+                )
+                if created:
+                    data['message'] += f"Assigned privilege {selected_priv} to {role_name}\n"
+                elif obj:
+                    data['error'] += f"Role {role_name} already has privilege {selected_priv}\n"
+
+        for not_selected_priv in not_selected_privs:
+            if not_selected_priv in curr_privs:
+                # remove privilge
+                p = PossiblePrivilege.objects.get(priv_name=not_selected_priv)
+                try:
+                    privilege = Privilege.objects.get(role=r, priv=p)
+                    privilege.delete()
+                    data['message'] += f"Removed privilege {not_selected_priv} for role {role_name}\n"
+                except:
+                    data['error'] += f"Could not remove privilege {not_selected_priv} from role {role_name}\n"
+        
+        return JsonResponse({'context': data})
+    return JsonResponse({'error': 'Request method was not POST'})
+
+
 def assign_priv_to_role(request):
     role = request.POST.get('role')
     priv = request.POST.get('priv')
