@@ -22,29 +22,49 @@
         <input type="submit" value="Delete Selected Privileges">
         <br>
         <label>
-            <input id="toggle_select_all" type="checkbox" value="Toggle Select All">
+            <input id="toggle_possible_priv_select" type="checkbox" value="Toggle Select All">
             Toggle Select All
         </label>
-        <div class="possible_privs_checkboxes">
+        <div id="possible_privs_checkboxes">
             <ul id="possible_privs">
             </ul>
         </div>
     </form>
     <br>
     <h3>Roles</h3>
-    <form action="{% url 'add_role' %}" method="POST">
+    <form id="add_role" action="#" method="POST">
         {% csrf_token %}
         <input type="text" name="role">
         <input type="submit" value="Add Role">
     </form>
     <br>
-    <form action="{% url 'delete_role' %}" method="POST">
+    <form id="delete_role" action="#" method="POST">
         {% csrf_token %}
-        <input type="text" name="role">
-        <input type="submit" value="Delete Role">
+        <input type="submit" value="Delete Selected Roles">
+        <br>
+        <label>
+            <input type="checkbox" id="toggle_role_select">
+            Toggle Select All
+        </label>
+        <div id="roles_checkboxes">
+            <ul id="roles">
+            <!-- {% for role in roles %}
+                <li>
+                    <p>{{ role }}</p>
+                    {% if role.privilege_set.all %}
+                        <ul>
+                            {% for privilege in role.privilege_set.all %}
+                            <li>{{ privilege.priv.priv_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </li>
+            {% endfor %} -->
+            </ul>
+        </div>
     </form>
     <br>
-    <form action="{% url 'assign_priv_to_role' %}" method="POST">
+    <!-- <form action="{% url 'assign_priv_to_role' %}" method="POST">
         {% csrf_token %}
         <input type="text" name="role" placeholder="role">
         <input type="text" name="priv" placeholder="priv">
@@ -56,21 +76,8 @@
         <input type="text" name="role" placeholder="role">
         <input type="text" name="priv" placeholder="priv">
         <input type="submit" value="Remove Priv from Role">
-    </form>
-    <ul>
-        {% for role in roles %}
-            <li>
-                <p>{{ role }}</p>
-                {% if role.privilege_set.all %}
-                    <ul>
-                        {% for privilege in role.privilege_set.all %}
-                        <li>{{ privilege.priv.priv_name }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
-            </li>
-        {% endfor %}
-    </ul>
+    </form> -->
+    
     
     <script type="text/javascript" src="{% static 'js/index.js' %}"></script>
 </body>

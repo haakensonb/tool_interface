@@ -54,25 +54,35 @@ def delete_possible_priv(request):
     return JsonResponse({'error': 'Request method was not POST'})
 
 def add_role(request):
-    role = request.POST.get('role')
-    obj, created = Role.objects.get_or_create(
-        role_name=role
-    )
-    if created:
-        print(f"created role {role}")
-    elif obj:
-        print(f"role {role} already exists")
-    return redirect('index')
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode('utf-8'))
+        role = json_data['role']
+        obj, created = Role.objects.get_or_create(
+            role_name=role
+        )
+        data = {'message': ""}
+        if created:
+            data['message'] = f"created role {role}"
+            data['role'] = Role.get_role_with_privs(role)
+        elif obj:
+            data['error'] = f"role {role} already exists"
+        return JsonResponse({'context': data})
+    return JsonResponse({'error': 'Request method was not POST'})
+
 
 def delete_role(request):
-    role = request.POST.get('role')
-    try:
-        r = Role.objects.get(role_name=role)
-        r.delete()
-        print(f"deleted role {role}")
-    except Role.DoesNotExist:
-        print(f"role {role} doesn't exist")
-    return redirect('index')
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode('utf-8'))
+        roles = json_data['roles']
+        data = {'message': "Deleted role(s): ", 'error': "Error roles do not exist: "}
+        for role in roles:
+            try:
+                r = Role.objects.get(role_name=role)
+                r.delete()
+                data['message'] += role
+            except Role.DoesNotExist:
+                data['error'] += role
+    return JsonResponse({'error': 'Request method was not POST'})
 
 def assign_priv_to_role(request):
     role = request.POST.get('role')

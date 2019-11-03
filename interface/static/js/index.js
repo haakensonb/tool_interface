@@ -19,61 +19,114 @@ var csrftoken = getCookie('csrftoken');
 function getAndRenderPrivs(){
     getData('http://127.0.0.1:8000/interface/all_possible_privs')
     .then(data => {
-        renderPrivs(data);
+        renderList(data, "possible_privs", renderPossiblePriv);
     });
 }
 
-function renderPrivs(data){
-    const listEl = document.querySelector('#possible_privs');
-    // make sure list is cleared first
+function getAndRenderRolesAndPrivs(){
+    getData('http://127.0.0.1:8000/interface/roles_and_privs')
+    .then(data => {
+        renderList(data, "roles", renderRoleAndPriv);
+    });
+}
+
+function clearList(listEl){
     while(listEl.firstChild){
         listEl.removeChild(listEl.firstChild);
     }
+}
 
-    data['context'].forEach((priv) => {
-        renderListItem(listEl, priv.priv_name);
+function renderList(data, listSelector, callback){
+    const listEl = document.querySelector(`#${listSelector}`);
+    // make sure the list is cleared
+    clearList(listEl);
+
+    data['context'].forEach((data) => {
+        callback(listEl, data);
     })
 };
 
-function renderListItem(listEl, inputString){
+function renderPossiblePriv(listEl, priv){
     const listItem = document.createElement('li');
     listEl.appendChild(listItem);
     const checkbox = document.createElement('input');
     checkbox.type = "checkbox";
-    checkbox.name = inputString;
+    checkbox.name = priv.priv_name;
     listItem.appendChild(checkbox);
-    listItem.appendChild(document.createTextNode(inputString));
+    listItem.appendChild(document.createTextNode(priv.priv_name));
 }
 
-let addPrivFormEl = document.querySelector("#add_priv");
+function renderRoleAndPriv(listEl, role_and_priv){
+    const listItem = document.createElement('li');
+    listEl.appendChild(listItem);
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = role_and_priv.role_name;
+    listItem.appendChild(checkbox);
+    listItem.appendChild(document.createTextNode(role_and_priv.role_name));
+    // render privs for role
+    const privList = document.createElement('ul');
+    listItem.appendChild(privList);
+    role_and_priv.privs.forEach(priv => {
+        const privItem = document.createElement('li');
+        privItem.innerText = priv;
+        privList.appendChild(privItem)
+    });
+
+}
+
+
+const addPrivFormEl = document.querySelector("#add_priv");
 const addPrivHandler = async (e) => {
     e.preventDefault();
-    let addPrivForm = new FormData(addPrivFormEl);
-    let priv = addPrivForm.get('add_priv');
+    const addPrivForm = new FormData(addPrivFormEl);
+    const priv = addPrivForm.get('add_priv');
     data = {add_priv: priv}
     const res = await postData('http://127.0.0.1:8000/interface/possibleprivilege/add', data);
     console.log(res);
     if(res.context.hasOwnProperty('added_priv')){
         const listEl = document.querySelector('#possible_privs');
-        renderListItem(listEl, res.context.added_priv);
+        renderPossiblePriv(listEl, res.context.added_priv);
     }
 };
 addPrivFormEl.addEventListener("submit", addPrivHandler);
 
-const toggleCheckbox = document.querySelector("#toggle_select_all");
-toggleCheckbox.addEventListener("click", (e) =>{
-    const checkboxContainer = document.querySelector(".possible_privs_checkboxes");
+// could be changed so that one function handles addPrivHandler and addRoleHandler
+// but they might end up being different in the future so for now they will get their own functions
+const addRoleFormEl = document.querySelector("#add_role");
+const addRoleHandler = async (e) => {
+    e.preventDefault();
+    const addRoleForm = new FormData(addRoleFormEl);
+    const role = addRoleForm.get("role");
+    data = {role: role};
+    const res = await postData('http://127.0.0.1:8000/interface/role/add', data);
+    console.log(res);
+    if(res.context.hasOwnProperty('role')){
+        const listEl = document.querySelector("#roles");
+        renderRoleAndPriv(listEl, res.context.role);
+    }
+};
+addRoleFormEl.addEventListener("submit", addRoleHandler);
+
+function toggleAllCheckboxHandler(e, checkboxSelector){
+    const checkboxContainer = document.querySelector(`#${checkboxSelector}`);
     const checkboxes = checkboxContainer.querySelectorAll("input[type=checkbox]");
     const srcChecked = e.target.checked;
     checkboxes.forEach((checkbox) => {
         checkbox.checked = srcChecked;
     });
-});
+}
+
+const togglePossiblePrivCheckbox = document.querySelector("#toggle_possible_priv_select");
+togglePossiblePrivCheckbox.addEventListener("click", (e) => toggleAllCheckboxHandler(e, "possible_privs_checkboxes"));
+
+const toggleRolesCheckbox = document.querySelector("#toggle_role_select");
+toggleRolesCheckbox.addEventListener("click", (e) => toggleAllCheckboxHandler(e, "roles_checkboxes"));
 
 const deletePrivFormEl = document.querySelector("#delete_priv");
 const deletePrivHandler = async (e) => {
     e.preventDefault();
-    const checkboxes = document.querySelector(".possible_privs_checkboxes").querySelectorAll("input[type=checkbox]");
+    const checkboxes = document.querySelector("#possible_privs_checkboxes").querySelectorAll("input[type=checkbox]");
     privsToDel = [];
     checkboxes.forEach((checkbox) => {
         if(checkbox.checked){
@@ -86,6 +139,23 @@ const deletePrivHandler = async (e) => {
 
 };
 deletePrivFormEl.addEventListener("submit", deletePrivHandler);
+
+// could maybe be merged with deletePrivFormEl
+const deleteRoleFormEl = document.querySelector("#delete_role");
+const deleteRoleHandler = async (e) => {
+    e.preventDefault();
+    const checkboxes = document.querySelector("#roles_checkboxes").querySelectorAll("input[type=checkbox]");
+    rolesToDel = [];
+    checkboxes.forEach((checkbox) => {
+        if(checkbox.checked){
+            rolesToDel.push(checkbox.name);
+        }
+    });
+    data = {roles: rolesToDel};
+    await postData('http://127.0.0.1:8000/interface/role/delete', data);
+    getAndRenderRolesAndPrivs();
+}
+deleteRoleFormEl.addEventListener("submit", deleteRoleHandler);
 
 async function postData(url, data){
     const response = await fetch(url, {
@@ -110,3 +180,4 @@ async function getData(url){
 }
 
 getAndRenderPrivs();
+getAndRenderRolesAndPrivs();

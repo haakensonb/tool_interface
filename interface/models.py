@@ -18,6 +18,18 @@ class Role(models.Model):
                 data['privs'].append(priv.priv.priv_name)
             data_list.append(data)
         return data_list
+    
+    @staticmethod
+    def get_role_with_privs(role):
+        r = Role.objects.get(role_name=role)
+        data = {
+            'id': r.id,
+            'role_name': r.role_name,
+            'privs': []
+        }
+        for priv in r.privilege_set.all():
+            data['privs'].append(priv.priv.priv_name)
+        return data
 
     def __str__(self):
         return self.role_name
