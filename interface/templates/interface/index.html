@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tool Interface</title>
+    <!-- should actually install at some point -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
 </head>
 <body>
     <h1>Interface</h1>
@@ -38,6 +40,17 @@
         <input type="submit" value="Add Role">
     </form>
     <br>
+    <div class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-content">
+            <form action="#" id="edit_role_privs">
+                <div id="role_priv_checkboxes">
+                    <ul id="role_privs"></ul>
+                </div>
+            </form>
+        </div>
+        <button class="modal-close is-large" aria-label="close"></button>
+    </div>
     <form id="delete_role" action="#" method="POST">
         {% csrf_token %}
         <input type="submit" value="Delete Selected Roles">
