@@ -49,3 +49,8 @@ class Privilege(models.Model):
     role = models.ForeignKey(Role, on_delete=models.CASCADE)
     priv = models.ForeignKey(PossiblePrivilege, on_delete=models.CASCADE)
 
+class ListPrivilege(models.Model):
+    
+    role = models.CharField(max_length=100)
+    priv = models.CharField(max_length=100)
+
