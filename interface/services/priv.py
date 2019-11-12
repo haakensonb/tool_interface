@@ -4,8 +4,8 @@ class DAG：
 
     def __init__(self):
         self.priv_list = dict()
-        for priv in ListPrivilege.objects.all():
-            self.priv_list[priv.role].append(priv.priv)
+        for priv in PossiblePrivilege.objects.all():
+            self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
 
     def create_sketch(self):
         node = []
@@ -36,12 +36,10 @@ class DAG：
 
         dfs(adj_mat, node, tot, 0)
 
-        PossiblePrivilege.objects.all().delete()
+        ListPrivilege.objects.all().delete()
         for i in range(len(node)):
-            role = Role.objects.get(role_name=name[i])
             for priv in node[i]:
-                privilege = Privilege.objects.get(priv_name=priv)
-                PossiblePrivilege(role=role, priv=privilege).save()
+                ListPrivilege(role=name[i], priv=priv).save()
  
         # return adj_mat, node
 
