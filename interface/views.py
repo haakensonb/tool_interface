@@ -4,6 +4,7 @@ from django.http import JsonResponse
 from interface.services.priv import DAG
 import json
 
+
 # Create your views here.
 def index(request):
     possible_privs = PossiblePrivilege.objects.all()
@@ -39,6 +40,7 @@ def add_possible_priv(request):
         return JsonResponse({'context': outgoing_data})
     return JsonResponse({'error': 'Request method was not POST'})
 
+
 def delete_possible_priv(request):
     if request.method == 'POST':
         json_data = json.loads(request.body.decode('utf-8'))
@@ -53,6 +55,7 @@ def delete_possible_priv(request):
                 data['error'] += priv
         return JsonResponse({'context': data})
     return JsonResponse({'error': 'Request method was not POST'})
+
 
 def add_role(request):
     if request.method == 'POST':
@@ -130,7 +133,7 @@ def edit_role_priv_assignment(request):
                     data['message'] += f"Removed privilege {not_selected_priv} for role {role_name}\n"
                 except:
                     data['error'] += f"Could not remove privilege {not_selected_priv} from role {role_name}\n"
-        
+
         return JsonResponse({'context': data})
     return JsonResponse({'error': 'Request method was not POST'})
 
@@ -155,13 +158,12 @@ def assign_priv_to_role(request):
             priv=p
         )
         if created:
-            dag = DAG()
-            dag.create_sketch()
             print(f"assigned privilege {priv} to {role}")
         elif obj:
             print(f"role {role} already has privilege {priv}")
 
     return redirect('index')
+
 
 def remove_priv_from_role(request):
     role = request.POST.get('role')
@@ -176,15 +178,22 @@ def remove_priv_from_role(request):
         p = PossiblePrivilege.objects.get(priv_name=priv)
     except PossiblePrivilege.DoesNotExist:
         print("privilege does not exist")
-    
+
     if r and p:
         try:
             privilege = Privilege.objects.get(role=r, priv=p)
             privilege.delete()
-            dag = DAG()
-            dag.create_sketch()
             print(f"removed privilege {priv} for role {role}")
         except:
             print("could not remove privilege")
-    
     return redirect('index')
+
+
+def create_dag(request):
+    try:
+        dag = DAG()
+        dag.create_sketch()
+        return JsonResponse({'message': 'DAG created'})
+    except Exception as e:
+        print(e)
+        return JsonResponse({'error': 'Something went wrong creating the DAG'})

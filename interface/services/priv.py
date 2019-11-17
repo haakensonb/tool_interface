@@ -1,18 +1,21 @@
 from interface.models import Role, PossiblePrivilege, Privilege, ListPrivilege
 
+
 class DAG():
     def __init__(self):
         self.priv_list = dict()
-        for priv in PossiblePrivilege.objects.all():
-            self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
+        for priv in Privilege.objects.all():
+            if priv.role.role_name not in self.priv_list.keys():
+                self.priv_list[priv.role.role_name] = [priv.priv.priv_name]
+            else:
+                self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
 
     def create_sketch(self):
         node = []
         node_name = []
-        for role in priv_list:
-            node_name.append([role, set(priv_list[role])])
-            node.append(set(priv_list[role]))
-            print(role)
+        for role in self.priv_list:
+            node_name.append([role, set(self.priv_list[role])])
+            node.append(set(self.priv_list[role]))
             
         d = 0
         for i in range(len(node)):
@@ -33,13 +36,13 @@ class DAG():
         adj_mat = [[] for i in range(len(node))]
         tot = [set() for i in range(len(node))]
 
-        dfs(adj_mat, node, tot, 0)
+        self.dfs(adj_mat, node, tot, 0)
 
         ListPrivilege.objects.all().delete()
         for i in range(len(node)):
             for priv in node[i]:
                 ListPrivilege(role=name[i], priv=priv).save()
- 
+
         # return adj_mat, node
 
 
@@ -47,11 +50,11 @@ class DAG():
         if(cur == len(node)):
             return
         if(len(tot[cur]) > 0):
-            dfs(adj_mat, node, tot, cur + 1)
+            self.dfs(adj_mat, node, tot, cur + 1)
             return
         
         for i in range(cur + 1, len(node)):
-            dfs(adj_mat, node, tot, i)
+            self.dfs(adj_mat, node, tot, i)
             if(tot[i].issubset(node[cur]) and (not tot[i].issubset(tot[cur]))):
                 if(i not in adj_mat[cur]):
                     adj_mat[cur].append(i)

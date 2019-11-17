@@ -221,6 +221,19 @@ const deleteRoleHandler = async (e) => {
 }
 deleteRoleFormEl.addEventListener("submit", deleteRoleHandler);
 
+const createDAGBtn = document.querySelector("#create_dag");
+createDAGBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    getData('http://127.0.0.1:8000/interface/create_dag')
+    .then((res) => {
+        if(res.message){
+            alert(res.message)
+        } else if(res.alert){
+            alert(res.alert);
+        }
+    });
+});
+
 // need buttons for priv editing
 
 async function postData(url, data){
