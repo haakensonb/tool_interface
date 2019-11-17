@@ -1,7 +1,6 @@
 from interface.models import Role, PossiblePrivilege, Privilege, ListPrivilege
 
-class DAG：
-
+class DAG():
     def __init__(self):
         self.priv_list = dict()
         for priv in PossiblePrivilege.objects.all():
