@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from interface.models import Role, PossiblePrivilege, Privilege
 from django.http import JsonResponse
+from interface.services.priv import DAG
 import json
 
 # Create your views here.
@@ -154,6 +155,8 @@ def assign_priv_to_role(request):
             priv=p
         )
         if created:
+            dag = DAG()
+            dag.create_sketch()
             print(f"assigned privilege {priv} to {role}")
         elif obj:
             print(f"role {role} already has privilege {priv}")
@@ -178,6 +181,8 @@ def remove_priv_from_role(request):
         try:
             privilege = Privilege.objects.get(role=r, priv=p)
             privilege.delete()
+            dag = DAG()
+            dag.create_sketch()
             print(f"removed privilege {priv} for role {role}")
         except:
             print("could not remove privilege")
