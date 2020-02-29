@@ -6,12 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Tool Interface</title>
+    <link rel="stylesheet" href="../../static/css/style.css">
     <!-- should actually install at some point -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+    <link rel="stylesheet" href="">
 </head>
-<body>
+<body class="container">
     <h1>Interface</h1>
     <button id="create_dag">Create the DAG</button>
+    <br>
+    <br>
+    <div id="cy" class="box"></div>
     <br>
     <h3>Possible Privileges</h3>
     <form id="add_priv" action="#" method="POST">
@@ -97,7 +102,9 @@
         <input type="submit" value="Remove Priv from Role">
     </form> -->
     
-    
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/cytoscape@3.14.0/dist/cytoscape.min.js"></script> 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script> 
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.2.2/cytoscape-dagre.min.js"></script>
     <script type="text/javascript" src="{% static 'js/index.js' %}"></script>
 </body>
 </html>
