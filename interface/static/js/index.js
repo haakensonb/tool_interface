@@ -226,11 +226,19 @@ createDAGBtn.addEventListener("click", (e) => {
     e.preventDefault();
     getData('http://127.0.0.1:8000/interface/create_dag')
     .then((res) => {
-        if(res.message){
-            alert(res.message)
-        } else if(res.alert){
+        if(res.alert){
             alert(res.alert);
         }
+        // reveal box holding dag
+        let cyEl = document.getElementById("cy");
+        cyEl.classList.remove("is-hidden");
+        cyEl.classList.add("fade-in");
+        // box reveal changes dimensions so must resize
+        cy.resize();
+        // update the dag
+        cy.json(res.formatted_graph);
+        cy.layout(dagreDefaults).run();
+
     });
 });
 
@@ -262,8 +270,13 @@ getAndRenderPrivs();
 getAndRenderRolesAndPrivs();
 
 
+// DANGEROUS global variables
+// needed by multiple event listener functions to properly render graph
+let cy;
+let dagreDefaults;
+
 document.addEventListener("DOMContentLoaded", ()=>{
-    let cy = cytoscape({
+    cy = cytoscape({
         container: document.getElementById("cy"),
     
         elements: [ // list of graph elements to start with
@@ -303,6 +316,7 @@ document.addEventListener("DOMContentLoaded", ()=>{
                 name: 'dagre'
             },
 
+            // interaction options
             minZoom: 1e-1,
             maxZoom: 1e1,
             zoomingEnabled: true,
@@ -314,9 +328,19 @@ document.addEventListener("DOMContentLoaded", ()=>{
             autolock: false,
             autoungrabify: false,
             autounselectify: false,
+
+            // rendering options:
+            headless: false,
+            styleEnabled: true,
+            hideEdgesOnViewport: false,
+            textureOnViewport: false,
+            motionBlur: false,
+            motionBlurOpacity: 0.2,
+            wheelSensitivity: 1,
+            pixelRatio: 'auto'
     });
 
-    let dagreDefaults  = {
+    dagreDefaults  = {
         name: "dagre",
         // dagre algo options, uses default value on undefined
         nodeSep: undefined, // the separation between adjacent nodes in the same rank

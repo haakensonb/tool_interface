@@ -43,7 +43,34 @@ class DAG():
             for priv in node[i]:
                 ListPrivilege(role=name[i], priv=priv).save()
 
-        # return adj_mat, node
+        return adj_mat, node
+    
+    def get_formatted_graph(self, adj_mat, node):
+        # use format as specified in cytoscape-dagre
+        formatted_info = {
+            'elements': {
+                'nodes': [],
+                'edges': []
+            }
+        }
+        for i, row in enumerate(adj_mat):
+            # create node object
+            formatted_info['elements']['nodes'].append({
+                    'data': {
+                        'id': f"n{i}",
+                        'label': f"n{i}"
+                    }
+            })
+            for j, val in enumerate(row):
+                # create edge object
+                formatted_info['elements']['edges'].append({
+                    'data': {
+                        'id': f"e{i}{val}",
+                        'source': f"n{i}",
+                        'target': f"n{val}"
+                    }
+                })
+        return formatted_info
 
 
     def dfs(self, adj_mat, node, tot, cur):
