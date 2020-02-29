@@ -73,7 +73,7 @@ function renderRoleAndPriv(listEl, role_and_priv){
     const editBtn = document.createElement('button');
     editBtn.value = role_and_priv.role_name;
     editBtn.innerText = `Edit ${role_and_priv.role_name} Priviliges`;
-    editBtn.classList.add('edit_priv');
+    editBtn.classList.add("edit_priv", "button", "is-info");
     editBtn.addEventListener("click", openEditBtn);
     listItem.appendChild(editBtn);
     // render privs for role

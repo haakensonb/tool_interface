@@ -11,98 +11,124 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
     <link rel="stylesheet" href="">
 </head>
-<body class="container">
-    <h1>Interface</h1>
-    <button id="create_dag">Create the DAG</button>
-    <br>
-    <br>
-    <!-- hidden by default, until dag is created -->
-    <div id="cy" class="box is-hidden"></div>
-    <br>
-    <h3>Possible Privileges</h3>
-    <form id="add_priv" action="#" method="POST">
-        {% csrf_token %}
-        <input type="text" name="add_priv">
-        <input type="submit" value="Add Privilege">
-    </form>
-    <br>
-    <form id="delete_priv" action="#" method="POST">
-        {% csrf_token %}
-        <input type="submit" value="Delete Selected Privileges">
-        <br>
-        <label>
-            <input id="toggle_possible_priv_select" type="checkbox" value="Toggle Select All">
-            Toggle Select All
-        </label>
-        <div id="possible_privs_checkboxes">
-            <ul id="possible_privs">
-            </ul>
+<body>
+    <section class="hero is-light">
+        <div class="hero-body">
+          <div class="container">
+            <h1 class="title">
+                Interface Tool
+            </h1>
+            <h2 class="subtitle">
+                For creating directed acyclic graphs in hierarchical access control schemes
+            </h2>
+          </div>
         </div>
-    </form>
-    <br>
-    <h3>Roles</h3>
-    <form id="add_role" action="#" method="POST">
-        {% csrf_token %}
-        <input type="text" name="role">
-        <input type="submit" value="Add Role">
-    </form>
-    <br>
-    <div class="modal">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-            <section class="modal-card-body">
-                <form action="#" id="edit_role_privs">
-                <input id="apply_priv_edit" type="submit" value="Apply changes">
-                <div id="role_priv_checkboxes">
-                    <ul id="role_privs"></ul>
-                </div>
-            </form>
-
-            </section>
-        </div>
-        <button class="modal-close is-large" aria-label="close"></button>
-    </div>
-
-    <form id="delete_role" action="#" method="POST">
-        {% csrf_token %}
-        <input type="submit" value="Delete Selected Roles">
-        <br>
-        <label>
-            <input type="checkbox" id="toggle_role_select">
-            Toggle Select All
-        </label>
-        <div id="roles_checkboxes">
-            <ul id="roles">
-            <!-- {% for role in roles %}
-                <li>
-                    <p>{{ role }}</p>
-                    {% if role.privilege_set.all %}
-                        <ul>
-                            {% for privilege in role.privilege_set.all %}
-                            <li>{{ privilege.priv.priv_name }}</li>
-                            {% endfor %}
-                        </ul>
-                    {% endif %}
-                </li>
-            {% endfor %} -->
-            </ul>
-        </div>
-    </form>
-    <br>
-    <!-- <form action="{% url 'assign_priv_to_role' %}" method="POST">
-        {% csrf_token %}
-        <input type="text" name="role" placeholder="role">
-        <input type="text" name="priv" placeholder="priv">
-        <input type="submit" value="Assign Priv to Role">
-    </form>
-    <br>
-    <form action="{% url 'remove_priv_from_role' %}" method="POST">
-        {% csrf_token %}
-        <input type="text" name="role" placeholder="role">
-        <input type="text" name="priv" placeholder="priv">
-        <input type="submit" value="Remove Priv from Role">
-    </form> -->
+    </section>
     
+    <section class="section">
+        <section class="container is-fluid">
+            <button id="create_dag" class="button is-success">Create the DAG</button>
+
+            <!-- hidden by default, until dag is created -->
+            <div id="cy" class="box is-hidden"></div>
+
+            <hr class="hr">
+
+            <div class="field">
+                <form id="add_priv" action="#" method="POST">
+                    {% csrf_token %}
+                    <label class="label">Possible Privileges</label>
+                    <div class="control">
+                        <div class="columns is-variable is-1">
+                            <div class="column is-half">
+                                <input class="input" type="text" name="add_priv">
+                            </div>
+                            <div class="column is-one-quarter">
+                                <input class="button is-info" type="submit" value="Add Privilege">
+                            </div>
+                            <div class="column is-one-quarter"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <hr class="hr">
+            
+            <div class="field">
+                <form id="delete_priv" action="#" method="POST">
+                    {% csrf_token %}
+                    <div class="control">
+                        <input class="button is-danger" type="submit" value="Delete Selected Privileges">
+                        <label class="label">
+                            <input id="toggle_possible_priv_select" type="checkbox" value="Toggle Select All">
+                            Toggle Select All
+                        </label>
+                        <div id="possible_privs_checkboxes">
+                            <ul id="possible_privs">
+                            </ul>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <hr class="hr">
+            
+            <div class="field">
+                <form id="add_role" action="#" method="POST">
+                    <div class="label">Roles</div>
+                    {% csrf_token %}
+                    <div class="control">
+                        <div class="columns is-variable is-1">
+                            <div class="column is-half">
+                                <input class="input" type="text" name="role">
+                            </div>
+                            <div class="column is-one-quarter">
+                                <input class="button is-info" type="submit" value="Add Role">
+                            </div>
+                            <div class="column is-one-quarter"></div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="modal">
+                <div class="modal-background"></div>
+                <div class="modal-card">
+                    <section class="modal-card-body">
+                        <form action="#" id="edit_role_privs">
+                        <input class="button is-success" id="apply_priv_edit" type="submit" value="Apply changes">
+                        <div id="role_priv_checkboxes">
+                            <ul id="role_privs"></ul>
+                        </div>
+                    </form>
+
+                    </section>
+                </div>
+                <button class="modal-close is-large" aria-label="close"></button>
+            </div>
+
+            <hr class="hr">
+
+            <div class="field">
+                <form id="delete_role" action="#" method="POST">
+                    {% csrf_token %}
+                    <input class="button is-danger" type="submit" value="Delete Selected Roles">
+                    <br>
+                    <label class="label">
+                        <input type="checkbox" id="toggle_role_select">
+                        Toggle Select All
+                    </label>
+                    <div class="content" id="roles_checkboxes">
+                        <ul id="roles">
+                        </ul>
+                    </div>
+                </form>
+            </div>
+                
+        </section>
+    </section>
+    
+
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/cytoscape@3.14.0/dist/cytoscape.min.js"></script> 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/dagre@0.8.5/dist/dagre.min.js"></script> 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.2.2/cytoscape-dagre.min.js"></script>
