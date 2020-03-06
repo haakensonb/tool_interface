@@ -53,3 +53,16 @@ class Privilege(models.Model):
 class ListPrivilege(models.Model):
     role = models.CharField(max_length=100)
     priv = models.CharField(max_length=100)
+
+
+class CrypRole(models.Model):
+    role = models.CharField(max_length=100)
+    label = models.CharField(max_length=100)
+    secret = models.CharField(max_length=100)
+
+
+class RoleEdegs(models.Model):
+    parent = models.ForeignKey(CrypRole, related_name="parent", on_delete=models.CASCADE)
+    child = models.ForeignKey(CrypRole, related_name="child", on_delete=models.CASCADE)
+    label = models.CharField(max_length=100)
+    secret = models.CharField(max_length=100)
