@@ -182,7 +182,6 @@ class DAG():
         return adj_mat, node, name
     
     def get_formatted_graph(self, adj_mat, node, node_names):
-        print(node_names)
         # use format as specified in cytoscape-dagre
         formatted_info = {
             'elements': {
