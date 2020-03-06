@@ -192,8 +192,10 @@ def remove_priv_from_role(request):
 def create_dag(request):
     try:
         dag = DAG()
-        dag.create_sketch()
-        return JsonResponse({'message': 'DAG created'})
+        adj_mat, nodes, name = dag.create_sketch()
+        formatted_graph = dag.get_formatted_graph(adj_mat, nodes, name)
+        print(formatted_graph)
+        return JsonResponse({'message': 'DAG created', 'formatted_graph': formatted_graph})
     except Exception as e:
         print(e)
         return JsonResponse({'error': 'Something went wrong creating the DAG'})
