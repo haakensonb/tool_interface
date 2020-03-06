@@ -192,8 +192,8 @@ def remove_priv_from_role(request):
 def create_dag(request):
     try:
         dag = DAG()
-        adj_mat, nodes = dag.create_sketch()
-        formatted_graph = dag.get_formatted_graph(adj_mat, nodes)
+        adj_mat, nodes, name = dag.create_sketch()
+        formatted_graph = dag.get_formatted_graph(adj_mat, nodes, name)
         print(formatted_graph)
         return JsonResponse({'message': 'DAG created', 'formatted_graph': formatted_graph})
     except Exception as e:

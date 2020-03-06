@@ -61,7 +61,7 @@ class CrypRole(models.Model):
     secret = models.CharField(max_length=100)
 
 
-class RoleEdegs(models.Model):
+class RoleEdges(models.Model):
     parent = models.ForeignKey(CrypRole, related_name="parent", on_delete=models.CASCADE)
     child = models.ForeignKey(CrypRole, related_name="child", on_delete=models.CASCADE)
     label = models.CharField(max_length=100)

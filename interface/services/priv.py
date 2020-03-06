@@ -3,7 +3,7 @@ import hashlib
 from hashlib import md5
 from interface.services.atallah import hash_fun, encrypt, decrypt
 
-from interface.models import Role, PossiblePrivilege, Privilege, ListPrivilege, CrypRole, RoleEdegs
+from interface.models import Role, PossiblePrivilege, Privilege, ListPrivilege, CrypRole, RoleEdges
 
 """
 Notes about notation:
@@ -67,6 +67,9 @@ class Node:
         """
         # k_i = hash_fun(s_i||1||l_i)
         return hash_fun(self.__s_i, self.l_i, val_opt="1")
+    
+    def get_s_i(self):
+        return self.__s_i
 
 
 class Edge:
@@ -91,10 +94,13 @@ class Edge:
         self.y_ij = encrypt(self.__r_ij, t_j, k_j)
 
     def update_r_ij(self, t_i, l_j):
-        self.__r_ij = hash_fun(t_i, l_j)
+        self.r_ij = hash_fun(t_i, l_j)
 
     def update_y_ij(self, t_j, k_j):
         self.y_ij = encrypt(self.__r_ij, t_j, k_j)
+    
+    def get_r_ij(self):
+        return self.__r_ij
 
 
 class DAG():
@@ -110,15 +116,15 @@ class DAG():
         
         #name is list of role names, node is list of lists of privileges, node_list is dict of node objects with atallah's keys
         node = []
-        # node_name = []
-        name = []
+        node_name = []
+        # name = []
         node_list = {}
 
         #load actual role-privilege mappings
         for role in self.priv_list:
-            # node_name.append([role, set(self.priv_list[role])])
+            node_name.append([role, set(self.priv_list[role])])
             node.append(set(self.priv_list[role]))
-            name.append(role)
+            # name.append(role)
         
         #find all interceptions between privileges and generate dummy nodes
         d = 0
@@ -126,18 +132,18 @@ class DAG():
             for j in range(i + 1, len(node)):
                 interc = node[i] & node[j]
                 if(len(interc) < min(len(node[i]), len(node[j])) and len(interc) > 0 and interc not in node):
-                    dummy_name = 'dummy' + str(d)
-                    # node_name.append([dummy_name,interc])
-                    name.append(dummy_name)
+                    dummy_name = 'Placeholder' + str(d)
+                    node_name.append([dummy_name,interc])
+                    # name.append(dummy_name)
                     node.append(interc)
                     d += 1
 
         node.sort(key=len, reverse=True)
-        # name = ["" for i in range(len(node))]
-        # for i in range(len(node)):
-        #     for j in range(len(node)):
-        #         if(node_name[i][1] == node[j]):
-        #             name[j] = node_name[i][0]
+        name = ["" for i in range(len(node))]
+        for i in range(len(node)):
+            for j in range(len(node)):
+                if(node_name[i][1] == node[j]):
+                    name[j] = node_name[i][0]
         adj_mat = [[] for i in range(len(node))]
         tot = [set() for i in range(len(node))]
 
@@ -147,32 +153,36 @@ class DAG():
         ListPrivilege.objects.all().delete()
         for i in range(len(node)):
             node_list[name[i]] = Node(name[i])
+            # print(node_list[name[i]].s_i)
             for priv in node[i]:
                 ListPrivilege(role=name[i], priv=priv).save()
         
         for i, row in enumerate(adj_mat):
             for j, val in enumerate(row):
-                paren = node_list[name[i]]
-                child = node_list[name[j]]
-                node_list[name[i]].edges[name[j]] = Edge(
+                paren = node_list[name[val]]
+                child = node_list[name[val]]
+                node_list[name[i]].edges[name[val]] = Edge(
                     paren.get_t_i(), child.l_i, child.get_t_i(), child.get_k_i())
+
+        # print(list(node_list.items())[0].s_i)
         #save to database
         CrypRole.objects.all().delete()
-        for node_name, node_obj in enumerate(node_list):
+        for node_name, node_obj in node_list.items():
             parent = CrypRole.objects.filter(role=node_name)
             if not parent:
-                CrypRole(role=node_name, label=node_obj.l_i, secret=node_obj.__s_i).save()
+                CrypRole(role=node_name, label=node_obj.l_i, secret=node_obj.get_s_i()).save()
             parent_role = CrypRole.objects.get(role=node_name)
-            for edge_name, edge_obj in enumerate(node_obj.edges):
+            for edge_name, edge_obj in node_obj.edges.items():
                 child = CrypRole.objects.filter(role=edge_name)
                 if not child:
-                    CrypRole(role=edge_name, label=node_list[edge_name].l_i, secret=node_list[edge_name].__s_i).save()
+                    CrypRole(role=edge_name, label=node_list[edge_name].l_i, secret=node_list[edge_name].get_s_i()).save()
                 child_role = CrypRole.objects.get(role=edge_name)
-                RoleEdegs(parent=parent_role, child=child_role, label=edge_obj.y_ij, secret=edge_obj.__r_ij).save()
+                RoleEdges(parent=parent_role, child=child_role, label=edge_obj.y_ij, secret=edge_obj.get_r_ij()).save()
 
-        return adj_mat, node
+        return adj_mat, node, name
     
-    def get_formatted_graph(self, adj_mat, node):
+    def get_formatted_graph(self, adj_mat, node, node_names):
+        print(node_names)
         # use format as specified in cytoscape-dagre
         formatted_info = {
             'elements': {
@@ -184,8 +194,8 @@ class DAG():
             # create node object
             formatted_info['elements']['nodes'].append({
                     'data': {
-                        'id': f"n{i}",
-                        'label': f"n{i}"
+                        'id': f"{node_names[i]}",
+                        'label': f"{node_names[i]}"
                     }
             })
             for j, val in enumerate(row):
@@ -193,8 +203,8 @@ class DAG():
                 formatted_info['elements']['edges'].append({
                     'data': {
                         'id': f"e{i}{val}",
-                        'source': f"n{i}",
-                        'target': f"n{val}"
+                        'source': f"{node_names[i]}",
+                        'target': f"{node_names[val]}"
                     }
                 })
         return formatted_info
