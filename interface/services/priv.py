@@ -2,7 +2,7 @@ import os
 import hashlib
 from hashlib import md5
 from interface.services.atallah import hash_fun, encrypt, decrypt
-
+from decorators import timer
 from interface.models import Role, PossiblePrivilege, Privilege, ListPrivilege, CrypRole, RoleEdges
 
 """
@@ -112,6 +112,7 @@ class DAG():
             else:
                 self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
 
+    @timer
     def create_sketch(self):
         
         #name is list of role names, node is list of lists of privileges, node_list is dict of node objects with atallah's keys
