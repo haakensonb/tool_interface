@@ -1,5 +1,9 @@
 import requests
 import random
+import sys
+
+# must be same filename as used in run_experiment.sh
+LOGFILE = "log2.txt"
 
 BASE_URL = "http://127.0.0.1:8000/interface"
 ADD_ROLE_ENDPOINT = f"{BASE_URL}/role/add"
@@ -42,7 +46,25 @@ if __name__ == "__main__":
     session = requests.session()
     session.get(BASE_URL)
     csrf_token = session.cookies['csrftoken']
-    session.headers.update({'X-CSRFToken': csrf_token})
+    session.headers.update({'X-CSRFToken': csrf_token})   
 
-    dag = generate_random_roles_and_privs(3, 3, session)
-    print(dag.json())
+    num_of_nodes, privs_per_role = int(sys.argv[1]), int(sys.argv[2])
+    generate_random_roles_and_privs(num_of_nodes, privs_per_role, session)
+
+    # highest_node_num = 20
+    # privs_per_role = 10
+    # inputs = [x for x in range(10, highest_node_num+1, 10)]
+    # for input_value in inputs:
+    #     counter = 1
+    #     with open(LOGFILE, "a") as f:
+    #         f.write(f"Running experiment with {input_value} roles, {privs_per_role} privs per role\n")
+    #     for i in range(3):
+    #         with open(LOGFILE, "a") as f:
+    #             f.write(f"Run number {counter}\n")
+    #         # reset the database
+    #         # change python3 to whatever path testing system is using for python
+    #         Popen("echo 'yes' | python3 manage.py flush", shell=True, stdout=PIPE)
+    #         generate_random_roles_and_privs(input_value, privs_per_role, session)
+    #         counter += 1
+    #     with open(LOGFILE, "a") as f:
+    #         f.write(f"Ending experiment with {input_value} roles\n")
