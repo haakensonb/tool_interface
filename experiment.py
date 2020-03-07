@@ -1,9 +1,11 @@
 import requests
 import random
 import sys
+import os
 
 # must be same filename as used in run_experiment.sh
-LOGFILE = "log2.txt"
+# LOGFILE = "log3.txt"
+LOGFILE = os.environ.get("EXP_LOGFILE")
 
 BASE_URL = "http://127.0.0.1:8000/interface"
 ADD_ROLE_ENDPOINT = f"{BASE_URL}/role/add"
