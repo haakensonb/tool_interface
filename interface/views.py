@@ -4,6 +4,10 @@ from django.http import JsonResponse
 from interface.services.priv import DAG
 import json
 
+from pympler import asizeof
+from helpers import append_to_file
+from experiment import LOGFILE
+
 
 # Create your views here.
 def index(request):
@@ -192,6 +196,8 @@ def remove_priv_from_role(request):
 def create_dag(request):
     try:
         dag = DAG()
+        log_text = f"Size of graph in memory: {asizeof.asizeof(dag)} bytes\n"
+        append_to_file(log_text, LOGFILE)
         adj_mat, nodes, name = dag.create_sketch()
         formatted_graph = dag.get_formatted_graph(adj_mat, nodes, name)
         return JsonResponse({'message': 'DAG created', 'formatted_graph': formatted_graph})
