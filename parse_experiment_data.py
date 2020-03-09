@@ -57,7 +57,7 @@ with open("memory_experiment_data.csv", "w", newline="") as csv_file_2:
 # create runtime graph
 plt.figure(1)
 line_time = plt.plot(x, y_time, marker="o")
-plt.title("Runtime for DAG creation Algorithm")
+plt.title("Runtime For DAG Creation Algorithm")
 plt.ylabel("Seconds")
 plt.xlabel("Roles")
 plt.legend()
