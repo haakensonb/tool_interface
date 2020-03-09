@@ -111,6 +111,7 @@ class DAG():
                 self.priv_list[priv.role.role_name] = [priv.priv.priv_name]
             else:
                 self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
+        self.node_list = {}
 
     @timer
     def create_sketch(self):
@@ -119,7 +120,7 @@ class DAG():
         node = []
         node_name = []
         # name = []
-        node_list = {}
+        # node_list = {}
 
         #load actual role-privilege mappings
         for role in self.priv_list:
@@ -150,25 +151,24 @@ class DAG():
 
         self.dfs(adj_mat, node, tot, 0)
 
-        node_list = {}
         ListPrivilege.objects.all().delete()
         for i in range(len(node)):
-            node_list[name[i]] = Node(name[i])
+            self.node_list[name[i]] = Node(name[i])
             # print(node_list[name[i]].s_i)
             for priv in node[i]:
                 ListPrivilege(role=name[i], priv=priv).save()
         
         for i, row in enumerate(adj_mat):
             for j, val in enumerate(row):
-                paren = node_list[name[val]]
-                child = node_list[name[val]]
-                node_list[name[i]].edges[name[val]] = Edge(
+                paren = self.node_list[name[i]]
+                child = self.node_list[name[val]]
+                self.node_list[name[i]].edges[name[val]] = Edge(
                     paren.get_t_i(), child.l_i, child.get_t_i(), child.get_k_i())
 
         # print(list(node_list.items())[0].s_i)
         #save to database
         CrypRole.objects.all().delete()
-        for node_name, node_obj in node_list.items():
+        for node_name, node_obj in self.node_list.items():
             parent = CrypRole.objects.filter(role=node_name)
             if not parent:
                 CrypRole(role=node_name, label=node_obj.l_i, secret=node_obj.get_s_i()).save()
@@ -176,7 +176,7 @@ class DAG():
             for edge_name, edge_obj in node_obj.edges.items():
                 child = CrypRole.objects.filter(role=edge_name)
                 if not child:
-                    CrypRole(role=edge_name, label=node_list[edge_name].l_i, secret=node_list[edge_name].get_s_i()).save()
+                    CrypRole(role=edge_name, label=self.node_list[edge_name].l_i, secret=self.node_list[edge_name].get_s_i()).save()
                 child_role = CrypRole.objects.get(role=edge_name)
                 RoleEdges(parent=parent_role, child=child_role, label=edge_obj.y_ij, secret=edge_obj.get_r_ij()).save()
 
@@ -227,6 +227,27 @@ class DAG():
         node[cur] = node[cur] - tot[cur]
         tot[cur] = set.union(tot[cur],node[cur])
     
+    def get_path(self, src_node, des_node, cur_path):
+        cur_path.append(src_node)
+        if src_node == des_node:
+            return cur_path
+
+        for children in self.node_list[src_node].edges.keys():
+            path = self.get_path(children, des_node, cur_path)
+            if len(path) > 0:
+                return path
+        return []
+
+    def derive_key(self, path):
+        src_node = path[0]
+        t_j = self.node_list[src_node].get_t_i()
+        k_j = "something"
+        for i in range(1, len(path)):
+            child = path[i]
+            t_j, k_j = decrypt(hash_fun(t_j, self.node_list[child].l_i), self.node_list[src_node].edges[child].y_ij)
+            src_node = child
+        return k_j
+
     # def delete_node(self, node):
     #     self.priv_list.pop(node)
     #     create_sketch()
