@@ -14,5 +14,6 @@ urlpatterns = [
     path('all_possible_privs', views.all_possible_privs, name="all_possible_privs"),
     path('get_role_privs/<role>', views.get_role_privs, name="get_role_privs"),
     path('edit_role_priv_assignment', views.edit_role_priv_assignment, name="edit_role_priv_assignment"),
-    path('create_dag', views.create_dag, name="create_dag")
+    path('create_dag', views.create_dag, name="create_dag"),
+    path('create_dag_experiment_2', views.create_dag_experiment_2, name="create_dag_experiment_2")
 ]

@@ -12,6 +12,7 @@ ADD_ROLE_ENDPOINT = f"{BASE_URL}/role/add"
 ADD_PRIV_ENDPOINT = f"{BASE_URL}/possibleprivilege/add"
 ASSIGN_ROLE_PRIV_ENDPOINT = f"{BASE_URL}/assign"
 CREATE_DAG_ENDPOINT = f"{BASE_URL}/create_dag"
+CREATE_DAG_EXP_2_ENDPOINT = f"{BASE_URL}/create_dag_experiment_2"
 
 def generate_random_roles_and_privs(num_roles, privs_per_role, session):
     nodes = {}
@@ -43,6 +44,24 @@ def generate_random_roles_and_privs(num_roles, privs_per_role, session):
     
     return session.get(CREATE_DAG_ENDPOINT)
 
+# redundant code, should be changed later
+def create_key_derivation_graph(num_roles, session):
+    nodes = {}
+    # create roles
+    for i in range(num_roles):
+        node_name = f"n{i}"
+        nodes[node_name] = None
+        session.post(ADD_ROLE_ENDPOINT, json={'role': node_name})
+    # create priv objects
+    objects = [f"object {i}" for i in range(num_roles)]
+    for obj in objects:
+        session.post(ADD_PRIV_ENDPOINT, json={'add_priv': obj})
+    # create mapping
+    for i, node_name in enumerate(nodes):
+        session.post(ASSIGN_ROLE_PRIV_ENDPOINT, data={'role': node_name, 'priv': objects[i]})
+
+    return session.post(CREATE_DAG_EXP_2_ENDPOINT, json={'num_of_nodes': num_roles})
+
 if __name__ == "__main__":
     # setup requests session using correct csrf_token
     session = requests.session()
@@ -50,23 +69,10 @@ if __name__ == "__main__":
     csrf_token = session.cookies['csrftoken']
     session.headers.update({'X-CSRFToken': csrf_token})   
 
-    num_of_nodes, privs_per_role = int(sys.argv[1]), int(sys.argv[2])
-    generate_random_roles_and_privs(num_of_nodes, privs_per_role, session)
-
-    # highest_node_num = 20
-    # privs_per_role = 10
-    # inputs = [x for x in range(10, highest_node_num+1, 10)]
-    # for input_value in inputs:
-    #     counter = 1
-    #     with open(LOGFILE, "a") as f:
-    #         f.write(f"Running experiment with {input_value} roles, {privs_per_role} privs per role\n")
-    #     for i in range(3):
-    #         with open(LOGFILE, "a") as f:
-    #             f.write(f"Run number {counter}\n")
-    #         # reset the database
-    #         # change python3 to whatever path testing system is using for python
-    #         Popen("echo 'yes' | python3 manage.py flush", shell=True, stdout=PIPE)
-    #         generate_random_roles_and_privs(input_value, privs_per_role, session)
-    #         counter += 1
-    #     with open(LOGFILE, "a") as f:
-    #         f.write(f"Ending experiment with {input_value} roles\n")
+    num_of_nodes, privs_per_role, experiment_num = int(sys.argv[1]), int(sys.argv[2]), int(sys.argv[3])
+    if(experiment_num == 1):
+        generate_random_roles_and_privs(num_of_nodes, privs_per_role, session)
+    elif(experiment_num == 2):
+        create_key_derivation_graph(num_of_nodes, session)
+    else:
+        print("invalid input")

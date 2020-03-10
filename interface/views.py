@@ -6,6 +6,7 @@ import json
 
 from pympler import asizeof
 from helpers import append_to_file
+from decorators import timer
 from experiment import LOGFILE
 
 
@@ -204,3 +205,30 @@ def create_dag(request):
     except Exception as e:
         print(e)
         return JsonResponse({'error': 'Something went wrong creating the DAG'})
+
+# only for key derivation exeriment, remove later
+def create_dag_experiment_2(request):
+    if request.method == 'POST':
+        json_data = json.loads(request.body.decode('utf-8'))
+        num_of_nodes = json_data['num_of_nodes']
+        try:
+            dag = DAG()
+            # log_text = f"Size of graph in memory: {asizeof.asizeof(dag)} bytes\n"
+            # append_to_file(log_text, LOGFILE)
+            adj_mat, nodes, name = dag.create_sketch()
+            key = experiment_2_helper(dag, num_of_nodes)
+            print(f"derived key: {key}")
+            formatted_graph = dag.get_formatted_graph(adj_mat, nodes, name)
+            return JsonResponse({'message': 'DAG created', 'formatted_graph': formatted_graph})
+        except Exception as e:
+            print(e)
+            return JsonResponse({'error': 'Something went wrong creating the DAG'})
+    
+    return JsonResponse({'error': 'Request method was not POST'})
+
+@timer
+def experiment_2_helper(dag, num_of_nodes):
+    cur_path = []
+    path = dag.get_path('n0', f'n{num_of_nodes - 1}', cur_path)
+    key = dag.derive_key(path)
+    return key
