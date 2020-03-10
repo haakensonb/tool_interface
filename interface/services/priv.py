@@ -113,7 +113,7 @@ class DAG():
                 self.priv_list[priv.role.role_name].append(priv.priv.priv_name)
         self.node_list = {}
 
-    @timer
+    # @timer
     def create_sketch(self):
         
         #name is list of role names, node is list of lists of privileges, node_list is dict of node objects with atallah's keys
@@ -182,6 +182,15 @@ class DAG():
 
         return adj_mat, node, name
     
+
+    @timer
+    def experiment_2_helper(self, num_of_nodes):
+        cur_path = []
+        path = self.get_path(f'n{num_of_nodes - 1}', 'n0', cur_path)
+        key = self.derive_key(path)
+        return key
+    
+
     def get_formatted_graph(self, adj_mat, node, node_names):
         # use format as specified in cytoscape-dagre
         formatted_info = {

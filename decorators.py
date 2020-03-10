@@ -1,7 +1,7 @@
 import functools
 import time
 from helpers import append_to_file
-from experiment import LOGFILE
+from django.conf import settings
 
 def timer(function):
     """
@@ -23,6 +23,8 @@ def timer(function):
         end_time = time.perf_counter()
         run_time = end_time - start_time
         log_text = f"{function.__name__} ran in {run_time} seconds\n"
-        append_to_file(log_text, LOGFILE)
+        print(log_text)
+        print(f"writing to file {settings.LOGFILE}")
+        append_to_file(log_text, settings.LOGFILE)
         return function_value
     return wrapper

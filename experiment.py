@@ -3,10 +3,6 @@ import random
 import sys
 import os
 
-# must be same filename as used in run_experiment.sh
-# LOGFILE = "log3.txt"
-LOGFILE = os.environ.get("EXP_LOGFILE")
-
 BASE_URL = "http://127.0.0.1:8000/interface"
 ADD_ROLE_ENDPOINT = f"{BASE_URL}/role/add"
 ADD_PRIV_ENDPOINT = f"{BASE_URL}/possibleprivilege/add"
@@ -57,8 +53,11 @@ def create_key_derivation_graph(num_roles, session):
     for obj in objects:
         session.post(ADD_PRIV_ENDPOINT, json={'add_priv': obj})
     # create mapping
+    cur_priv_num = 1 
     for i, node_name in enumerate(nodes):
-        session.post(ASSIGN_ROLE_PRIV_ENDPOINT, data={'role': node_name, 'priv': objects[i]})
+        for j in range(len(objects[:cur_priv_num])):
+            session.post(ASSIGN_ROLE_PRIV_ENDPOINT, data={'role': node_name, 'priv': objects[j]})
+        cur_priv_num += 1
 
     return session.post(CREATE_DAG_EXP_2_ENDPOINT, json={'num_of_nodes': num_roles})
 
