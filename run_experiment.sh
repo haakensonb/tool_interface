@@ -1,12 +1,11 @@
 #!/bin/bash
-"""
-IMPORTANT
-When this filename is changed, the 'LOGFILE' variable in settings.py must
-also be changed to the same thing. Due to issues with environment variables
-the experiment logfile information must be changed in two places but 
-this should be fixed in the future.
-"""
-EXP_LOGFILE="log4.txt"
+
+# IMPORTANT
+# When this filename is changed, the 'LOGFILE' variable in settings.py must
+# also be changed to the same thing. Due to issues with environment variables
+# the experiment logfile information must be changed in two places but 
+# this should be fixed in the future.
+EXP_LOGFILE="log5.txt"
 
 PRIVS_PER_ROLE=10
 EXP_NUM_FLAG=2
